@@ -1,82 +1,98 @@
-import { useState } from "react"
-import axios from "axios"
-import { useNavigate } from "react-router-dom"
-import { authService } from "../main"
-import { useGoogleLogin } from "@react-oauth/google"
-import { FcGoogle } from "react-icons/fc"
-import toast from "react-hot-toast"
+import { useState } from "react";
+import { motion } from "framer-motion";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { authService } from "../main";
+import { useGoogleLogin } from "@react-oauth/google";
+import { FcGoogle } from "react-icons/fc";
+import toast from "react-hot-toast";
+import { useAppData } from "../context/AppContext";
 
 const Login = () => {
-  const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { setUser, setIsAuth } = useAppData();
 
-  const responseGoogle = async (authResult:any) => {
+  const responseGoogle = async (authResult: any) => {
+    console.log("Google response:", authResult);
 
-  console.log("Google response:", authResult)
+    if (!authResult?.code) {
+      toast.error("Google login failed");
+      return;
+    }
 
-  if(!authResult?.code){
-    toast.error("Google login failed")
-    return
-  }
+    setLoading(true);
 
-  setLoading(true)
+    try {
+      const result = await axios.post(`${authService}/api/auth/login`, {
+        code: authResult.code,
+      });
 
-  try{
-    const result = await axios.post(`${authService}/api/auth/login`,{
-      code: authResult.code
-    })
+      localStorage.setItem("token", result.data.token);
+      toast.success(result.data.message);
+      setUser(result.data.user);
+      setIsAuth(true);
+      navigate("/");
+    } catch (error) {
+      console.log(error);
+      toast.error("Problem while login");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    localStorage.setItem("token",result.data.token)
-
-    toast.success(result.data.message)
-
-    navigate("/")
-  }
-  catch(error){
-    console.log(error)
-    toast.error("Problem while login")
-  }
-
-  setLoading(false)
-}
   const googleLogin = useGoogleLogin({
     onSuccess: responseGoogle,
     onError: responseGoogle,
-    flow: "auth-code"
-  })
+    flow: "auth-code",
+  });
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white px-4">
-      <div className="w-full max-w-sm space-y-6">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="w-full max-w-[400px] rounded-xl border border-border bg-card p-8 shadow-sm"
+      >
+        {/* Brand */}
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-extrabold tracking-tight text-primary">
+            Apni Dukan
+          </h1>
+        </div>
 
-        <h1 className="text-center text-3xl font-bold text-[#E23774]">
-          Apni Dukan
-        </h1>
+        {/* Heading */}
+        <div className="mb-6 text-center">
+          <h2 className="text-lg font-semibold text-secondary">
+            Log in or sign up to continue
+          </h2>
+        </div>
 
-        <p className="text-center text-sm text-gray-500">
-          Log in or sign up to continue
-        </p>
-
+        {/* Google Button */}
         <button
           onClick={() => googleLogin()}
           disabled={loading}
-          className="flex w-full items-center justify-center gap-3 rounded-xl border border-gray-300 bg-white px-4 py-4"
+          className="flex w-full items-center justify-center gap-3 rounded-lg border border-border bg-card px-4 py-3.5 font-medium text-secondary transition-colors hover:bg-muted disabled:opacity-60"
         >
           <FcGoogle size={20} />
-
-          {loading ? "Signing in..." : "Continue with Google"}
-
+          <span>{loading ? "Signing in..." : "Continue with Google"}</span>
         </button>
 
-        <p className="text-center text-xs text-gray-400">
+        {/* Legal */}
+        <p className="mt-6 text-center text-xs text-muted-foreground">
           By continuing you agree with our{" "}
-          <span className="text-[#E23774]">Terms of Service</span> &{" "}
-          <span className="text-[#E23774]">Privacy Policy</span>
+          <a href="#" className="underline hover:text-secondary">
+            Terms of Service
+          </a>{" "}
+          &amp;{" "}
+          <a href="#" className="underline hover:text-secondary">
+            Privacy Policy
+          </a>
         </p>
-
-      </div>
+      </motion.div>
     </div>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;

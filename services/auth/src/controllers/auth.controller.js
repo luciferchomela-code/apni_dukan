@@ -12,9 +12,11 @@ export const loginUser = asyncHandler(async (req,res)=>{
       message:"Authorization code is required"
     })
   }
-
+  //frontend sends code as response 
+  //google verifies it and give token 
   const googleRes = await oauth2client.getToken(code)
   const tokens= googleRes.tokens
+  //tells google Use these tokens for future request
   oauth2client.setCredentials(tokens)
   const userRes = await axios.get(
     `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${googleRes.tokens.access_token}`
