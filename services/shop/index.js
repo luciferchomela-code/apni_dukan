@@ -1,13 +1,23 @@
-import express from "express";
-import connectDB from "./src/config/db.js";
+
 import dotenv from "dotenv";
 dotenv.config();
+
+import express from "express";
+import connectDB from "./src/config/db.js";
+import cors from "cors";
+import router from "./src/routes/shop.route.js";
 const app = express();
 
-const PORT = process.env.PORT || 5000
+app.use(cors());
+app.use(express.json());                        
+app.use(express.urlencoded({ extended: true }));
 
-connectDB()
+const PORT = process.env.PORT || 5001;
 
-app.listen(PORT, ()=>{
-  console.log(`Auth service running on port ${PORT}`)
-})
+app.use("/api/shop", router);                   
+
+connectDB();
+
+app.listen(PORT, () => {
+    console.log(`Shop service running on port ${PORT}`);
+});

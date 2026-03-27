@@ -6,6 +6,8 @@ import { GoogleOAuthProvider } from "@react-oauth/google"
 import { AppProvider } from "./context/AppContext"
 
 export const authService = "http://localhost:5000"
+export const shopService = "http://localhost:5001"
+
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

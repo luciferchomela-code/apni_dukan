@@ -54,7 +54,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
             try {
                 const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
                 const data = await res.json()
-                console.log(data)
+                console.log(data) //kyoki jharkhand ek state district ha city nahi
                 setLocation({
                     latitude,
                     longitude,
@@ -97,3 +97,40 @@ export const useAppData = (): AppContextType => {
     }
     return context
 }
+/* App Start
+      │
+      ├──▶ fetchUser()
+      │         │
+      │         ├── LocalStorage mein token hai?
+      │         │         │
+      │         │    NO ──▶ loading = false, return
+      │         │         │
+      │         │    YES ──▶ Backend call /api/auth/me
+      │         │                   │
+      │         │              Success ──▶ setUser() + setIsAuth(true)
+      │         │              Error   ──▶ console.log(error)
+      │         │                   │
+      │         └──────────── setLoading(false)
+      │
+      ├──▶ getLocation()
+      │         │
+      │         ├── Browser geolocation support hai?
+      │         │         │
+      │         │    NO ──▶ Alert show karo
+      │         │         │
+      │         │    YES ──▶ GPS se latitude & longitude lo
+      │         │                   │
+      │         │              Success ──▶ OpenStreetMap API call
+      │         │                               │
+      │         │                          Success ──▶ setLocation() + setCity()
+      │         │                          Error   ──▶ setCity("Failed to load")
+      │         │                               │
+      │         │              Denied  ──▶ setCity("Location denied")
+      │         │                   │
+      │         └──────────── setLoadingLocation(false)
+      │
+      └──▶ Context Provider
+                │
+                └── Saara data (user, isAuth, city, location...)
+                    har component ko available hai via useAppData()
+*/

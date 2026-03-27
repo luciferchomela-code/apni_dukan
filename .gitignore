@@ -1,2 +1,6 @@
 .env
-node_module
+node_modules/
+dist/
+build/
+.vscode/
+*.log

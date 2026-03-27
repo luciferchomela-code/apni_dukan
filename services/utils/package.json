@@ -1,0 +1,1 @@
+{"type":"module","name":"utils","version":"1.0.0","description":"","main":"index.js","scripts":{"start":"node server.js","dev":"nodemon server.js"},"keywords":[],"author":"","license":"ISC","dependencies":{"cloudinary":"^2.9.0","cors":"^2.8.6","dotenv":"^17.3.1","express":"^5.2.1","nodemon":"^3.1.14"}}
