@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAppData } from '../context/AppContext'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { CgShoppingCart } from 'react-icons/cg'
@@ -24,46 +24,49 @@ const Navbar = () => {
     }, [search]);
 
     return (
-        <div className='w-full bg-card shadow-sm'>
-            <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
+        <div className='w-full bg-[#0A0A0A] border-b border-[#1F1F1F] sticky top-0 z-[100]'>
+            <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
                 <Link
                     to={'/'}
-                    className='text-2xl font-bold text-primary cursor-pointer'>
+                    className='text-2xl font-serif italic font-black text-[#D4AF37] tracking-[0.2em] uppercase cursor-pointer hover:opacity-80 transition-opacity'>
                     Apni Dukan
                 </Link>
-                <div className='flex items-center gap-4'>
-                    <Link to='/cart' className='relative'>
-                        <CgShoppingCart className='h-6 w-6 text-primary' />
-                        <span className='absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white'>
+                
+                <div className='flex items-center gap-8'>
+                    <Link to='/cart' className='relative group'>
+                        <CgShoppingCart className='h-6 w-6 text-[#A0A0A0] group-hover:text-[#D4AF37] transition-colors' />
+                        <span className='absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#D4AF37] text-[9px] font-black text-[#0A0A0A]'>
                             0
                         </span>
                     </Link>
+                    
                     {isAuth ? (
-                        <Link to="/account" className='font-medium text-primary'>
+                        <Link to="/account" className='text-[10px] font-black text-[#D4AF37] uppercase tracking-[0.3em] hover:opacity-70 transition-opacity'>
                             Account
                         </Link>
                     ) : (
-                        <Link to="/login" className='font-medium text-primary'>
-                            Login
+                        <Link to="/login" className='text-[10px] font-black text-[#D4AF37] uppercase tracking-[0.3em] bg-[#D4AF37]/10 px-6 py-2.5 border border-[#D4AF37]/20 rounded-full hover:bg-[#D4AF37] hover:text-[#0A0A0A] transition-all'>
+                            Sign In
                         </Link>
                     )}
                 </div>
             </div>
+
             {isHomePage && (
-                <div className='border-t border-border px-4 py-3'>
-                    <div className='mx-auto flex max-w-7xl items-center rounded-lg border border-border shadow-sm'>
-                        <div className='flex items-center gap-2 px-3 border-r border-border text-secondary'>
-                            <BiMapPin className='h-4 w-4 text-primary' />
-                            <span className='text-sm truncate max-w-[80px]'>{city}</span>
+                <div className='border-t border-[#1F1F1F] px-6 py-4 bg-[#121212]/50 backdrop-blur-md'>
+                    <div className='mx-auto flex max-w-3xl items-center rounded-full border border-[#1F1F1F] bg-[#0A0A0A] overflow-hidden focus-within:border-[#D4AF37]/40 transition-all'>
+                        <div className='flex items-center gap-3 px-6 border-r border-[#1F1F1F] bg-[#121212] py-3'>
+                            <BiMapPin className='h-3.5 w-3.5 text-[#D4AF37]' />
+                            <span className='text-[10px] font-black text-[#A0A0A0] uppercase tracking-widest truncate max-w-[100px]'>{city || "Location"}</span>
                         </div>
-                        <div className='flex flex-1 items-center gap-2 px-3'>
-                            <BiSearch className='h-4 w-4 text-muted-foreground' />
+                        <div className='flex flex-1 items-center gap-3 px-6'>
+                            <BiSearch className='h-4 w-4 text-[#A0A0A0]/40' />
                             <input
                                 type="text"
-                                placeholder='Search for shop'
+                                placeholder='SEARCH FOR SHOPS...'
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
-                                className='w-full py-2 text-sm outline-none bg-transparent text-secondary placeholder:text-muted-foreground'
+                                className='w-full py-3 text-[10px] font-bold tracking-widest outline-none bg-transparent text-[#F8F8F8] placeholder:text-[#A0A0A0]/20 uppercase'
                             />
                         </div>
                     </div>

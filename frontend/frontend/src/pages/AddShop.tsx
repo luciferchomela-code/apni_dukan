@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAppData } from "../context/AppContext";
 import toast from "react-hot-toast";
 import { shopService } from "../main";
-import { BiMapPin, BiUpload } from "react-icons/bi";
+import { BiMapPin, BiUpload, BiX } from "react-icons/bi";
 import axios from "axios";
 
 const SHOP_TYPES = [
@@ -15,25 +15,40 @@ const SHOP_TYPES = [
     "Furniture & Home",
     "Beauty & Wellness",
     "Sports & Fitness",
+    "kitchenwear",
     "Other",
 ];
 
-interface props{
-    fetchMyShop:()=> Promise<void>;
+interface props {
+    fetchMyShop: () => Promise<void>;
 }
 
-const AddShop = ({fetchMyShop}:props) => {
+const AddShop = ({ fetchMyShop }: props) => {
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [phone, setPhone] = useState("");
-    const [shoptype, setShoptype] = useState(""); 
+    const [shoptype, setShoptype] = useState("");
     const [image, setImage] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
 
     const { loadingLocation, location } = useAppData();
 
+    useEffect(() => {
+        return () => {
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+        };
+    }, [previewUrl]);
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImage(file);
+            setPreviewUrl(URL.createObjectURL(file));
+        }
+    };
+
     const handleSubmit = async () => {
-        // Precise Validation
         if (!name || !image || !location || !shoptype || shoptype === "") {
             toast.error("All fields are required, including shop type");
             return;
@@ -47,7 +62,7 @@ const AddShop = ({fetchMyShop}:props) => {
         formData.append("formattedAddress", location.formattedAddress);
         formData.append("file", image);
         formData.append("phone", phone);
-        formData.append("shoptype", shoptype); 
+        formData.append("shoptype", shoptype);
 
         try {
             setSubmitting(true);
@@ -56,6 +71,7 @@ const AddShop = ({fetchMyShop}:props) => {
                 formData,
                 {
                     headers: {
+                        "Content-Type": "multipart/form-data",
                         Authorization: `Bearer ${localStorage.getItem("token")}`,
                     },
                 }
@@ -70,77 +86,100 @@ const AddShop = ({fetchMyShop}:props) => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-10">
-            <div className="w-full max-w-lg bg-white rounded-2xl shadow-md p-8 space-y-5">
-                <div className="space-y-1">
-                    <h1 className="text-2xl font-bold text-gray-800">Add Your Shop</h1>
-                    <p className="text-sm text-gray-400">Fill in the details to list your shop</p>
+        <div className="min-h-screen bg-white flex items-center justify-center px-4 py-12">
+            <div className="w-full max-w-xl space-y-10">
+                <div className="text-center space-y-2">
+                    <h1 className="text-4xl font-black text-[#4F46E5] tracking-tight">Launch Your Shop</h1>
+                    <p className="text-[#475569] font-medium opacity-80 uppercase tracking-widest text-xs">Empower your business with modern tools</p>
                 </div>
 
-                <input
-                    type="text"
-                    placeholder="Shop name"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-400 transition"
-                />
+                <div className="bg-white rounded-[2.5rem] shadow-[0_30px_100px_rgba(0,0,0,0.08)] border border-gray-100 p-8 sm:p-12 space-y-8">
+                    {/* Premium Image Upload */}
+                    <div className="relative group">
+                        {previewUrl ? (
+                            <div className="relative h-56 w-full rounded-3xl overflow-hidden border-2 border-gray-50 shadow-inner">
+                                <img src={previewUrl} alt="Preview" className="h-full w-full object-contain transition-transform duration-700 group-hover:scale-105" />
+                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                    <button 
+                                        onClick={() => { setImage(null); setPreviewUrl(null); }}
+                                        className="bg-white/20 backdrop-blur-md p-3 rounded-2xl text-white hover:bg-white/40 transition-all border border-white/30"
+                                    >
+                                        <BiX className="h-6 w-6" />
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <label className="w-full flex flex-col items-center justify-center h-56 rounded-[2rem] border-2 border-dashed border-gray-100 bg-gray-50/50 hover:bg-red-50/30 hover:border-red-200 cursor-pointer transition-all group">
+                                <div className="bg-white p-4 rounded-3xl shadow-sm group-hover:shadow-md transition-all group-hover:scale-110">
+                                    <BiUpload className="h-8 w-8 text-emerald-500" />
+                                </div>
+                                <span className="mt-4 text-sm font-bold text-gray-400 group-hover:text-emerald-500 transition-colors uppercase tracking-widest">Upload Banner</span>
+                                <input type="file" accept="image/*" hidden onChange={handleImageChange} />
+                            </label>
+                        )}
+                    </div>
 
-                <input
-                    type="number"
-                    placeholder="Contact number"
-                    value={phone}
-                    onChange={e => setPhone(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-400 transition"
-                />
+                    <div className="grid grid-cols-1 gap-6">
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-4">Shop Information</label>
+                            <input
+                                type="text"
+                                placeholder="What's your shop's name?"
+                                value={name}
+                                onChange={e => setName(e.target.value)}
+                                className="w-full rounded-2xl bg-gray-50 border-2 border-[#E2E8F0]/50 px-6 py-4 text-sm font-semibold text-[#475569] outline-none focus:bg-white focus:border-[#4F46E5]/30 focus:ring-4 focus:ring-[#4F46E5]/5 transition-all"
+                            />
+                        </div>
 
-                <textarea
-                    placeholder="Shop description"
-                    value={description}
-                    onChange={e => setDescription(e.target.value)}
-                    rows={3}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-400 transition resize-none"
-                />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <input
+                                type="number"
+                                placeholder="Phone number"
+                                value={phone}
+                                onChange={e => setPhone(e.target.value)}
+                                className="w-full rounded-2xl bg-gray-50 border-2 border-transparent px-6 py-4 text-sm font-semibold text-gray-800 outline-none focus:bg-white focus:border-amber-500/10 focus:ring-4 focus:ring-amber-500/5 transition-all"
+                            />
+                            <select
+                                value={shoptype}
+                                onChange={e => setShoptype(e.target.value)}
+                                className="w-full rounded-2xl bg-gray-50 border-2 border-[#E2E8F0]/50 px-6 py-4 text-sm font-semibold text-[#475569] outline-none focus:bg-white focus:border-[#4F46E5]/30 focus:ring-4 focus:ring-[#4F46E5]/5 transition-all appearance-none cursor-pointer"
+                            >
+                                <option value="">Category</option>
+                                {SHOP_TYPES.map(type => (
+                                    <option key={type} value={type}>{type}</option>
+                                ))}
+                            </select>
+                        </div>
 
-                <select
-                    value={shoptype}
-                    onChange={e => setShoptype(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-400 transition bg-white"
-                >
-                    <option value="">Select shop type</option>
-                    {SHOP_TYPES.map(type => (
-                        <option key={type} value={type}>{type}</option>
-                    ))}
-                </select>
+                        <textarea
+                            placeholder="Tell us about your shop..."
+                            value={description}
+                            onChange={e => setDescription(e.target.value)}
+                            rows={3}
+                            className="w-full rounded-2xl bg-gray-50 border-2 border-[#E2E8F0]/50 px-6 py-4 text-sm font-semibold text-[#475569] outline-none focus:bg-white focus:border-[#4F46E5]/30 focus:ring-4 focus:ring-[#4F46E5]/5 transition-all resize-none"
+                        />
+                    </div>
 
-                <label className="flex items-center gap-3 cursor-pointer rounded-xl border border-dashed border-gray-300 px-4 py-3 hover:border-red-400 transition">
-                    <BiUpload className="h-5 w-5 text-red-500 shrink-0"/>
-                    <span className="text-sm text-gray-500 truncate">
-                        {image ? image.name : "Upload your shop image"}
-                    </span>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        hidden
-                        onChange={e => setImage(e.target.files?.[0] || null)}
-                    />
-                </label>
+                    <div className="flex items-center gap-4 bg-gray-50/50 p-5 rounded-3xl border border-gray-100">
+                        <div className="bg-white p-2.5 rounded-2xl shadow-sm">
+                            <BiMapPin className="h-5 w-5 text-[#4F46E5]" />
+                        </div>
+                        <div className="flex-1">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Current Location</p>
+                            <p className="text-xs font-bold text-gray-700 truncate max-w-[250px]">
+                                {loadingLocation ? "Detecting location..." : location?.formattedAddress || "Unknown Location"}
+                            </p>
+                        </div>
+                    </div>
 
-                <div className="flex items-start gap-3 rounded-xl border border-gray-100 bg-gray-50 p-4">
-                    <BiMapPin className="mt-0.5 h-5 w-5 text-red-500 shrink-0"/>
-                    <p className="text-sm text-gray-600">
-                        {loadingLocation
-                            ? "Fetching your location..."
-                            : location?.formattedAddress || "Location not available"}
-                    </p>
+                    <button
+                        onClick={handleSubmit}
+                        disabled={submitting || loadingLocation}
+                        className="w-full rounded-[1.5rem] bg-[#4F46E5] py-5 text-sm font-black text-white hover:bg-[#4338CA] disabled:bg-gray-200 disabled:text-gray-400 transition-all shadow-xl shadow-[#4F46E5]/10 active:scale-[0.98] uppercase tracking-widest"
+                    >
+                        {submitting ? "Launching..." : "Register Shop"}
+                    </button>
                 </div>
-
-                <button
-                    onClick={handleSubmit}
-                    disabled={submitting}
-                    className="w-full rounded-xl bg-[#e23744] py-3 text-sm font-semibold text-white hover:bg-red-600 disabled:opacity-60 transition"
-                >
-                    {submitting ? "Submitting..." : "Add Shop"}
-                </button>
             </div>
         </div>
     );
