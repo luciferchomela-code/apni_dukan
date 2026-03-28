@@ -4,7 +4,6 @@ import { shopService } from '../main'
 import toast from 'react-hot-toast'
 import { BiTrash, BiPackage, BiCrown, BiShow, BiHide } from 'react-icons/bi'
 import { motion, AnimatePresence } from 'framer-motion'
-
 interface Item {
   _id: string;
   name: string;

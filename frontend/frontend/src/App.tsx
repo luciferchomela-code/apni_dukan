@@ -8,6 +8,7 @@ import Account from "./pages/Account";
 import Shop from "./pages/shop.tsx";
 import { useAppData } from "./context/AppContext";
 import ShopPage from "./pages/shopPage";
+import Cart from "./pages/Cart";
 
 const App = () => {
     const { loading } = useAppData(); // Add a 'loading' state if you have one
@@ -25,6 +26,7 @@ const App = () => {
                     <Route path="/shop/:id" element={<ShopPage />} />
                     <Route path="/select-role" element={<SelectRole />} />
                     <Route path="/account" element={<Account />} />
+                    <Route path="/cart" element={<Cart />} />
                 {/* </Route> */}
             </Routes>
             <Toaster />

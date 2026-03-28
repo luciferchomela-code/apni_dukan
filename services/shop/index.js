@@ -7,6 +7,7 @@ import connectDB from "./src/config/db.js";
 import cors from "cors";
 import router from "./src/routes/shop.route.js";
 import itemRouter from "./src/routes/Item.route.js";
+import cartRouter from "./src/routes/cart.route.js";
 
 const app = express();
 
@@ -18,7 +19,7 @@ const PORT = process.env.PORT || 5001;
 
 app.use("/api/shop", router); 
 app.use("/api/item", itemRouter)
-
+app.use("/api/cart",cartRouter)
 connectDB();
 
 app.listen(PORT, () => {

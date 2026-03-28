@@ -4,6 +4,7 @@ import axios from "axios"
 import { shopService } from "../main"
 import { motion, AnimatePresence } from "framer-motion"
 import { BiMapPin, BiShoppingBag, BiArrowBack, BiCrown } from "react-icons/bi"
+import { useAppData } from "../context/AppContext"
 import toast from "react-hot-toast"
 
 interface Shop {
@@ -29,10 +30,12 @@ interface Item {
 const ShopPage = () => {
     const { id } = useParams()
     const navigate = useNavigate()
+    const { isAuth, user, fetchCart } = useAppData()
 
     const [shop, setShop] = useState<Shop | null>(null)
     const [items, setItems] = useState<Item[]>([])
     const [loading, setLoading] = useState<boolean>(true)
+    const [addingToCart, setAddingToCart] = useState<string | null>(null)
 
     const fetchData = async () => {
         try {
@@ -52,6 +55,29 @@ const ShopPage = () => {
             toast.error("Failed to load shop details")
         } finally {
             setLoading(false)
+        }
+    }
+
+    const addToCart = async (itemId: string) => {
+        if (!isAuth) return toast.error("Please login to start shopping")
+        if (user?.role !== "customer") return toast.error("Only customers can purchase items")
+
+        try {
+            setAddingToCart(itemId)
+            const token = localStorage.getItem("token")
+            
+            const { data } = await axios.post(`${shopService}/api/cart/add`, 
+                { shopId: id, itemId },
+                { headers: { Authorization: `Bearer ${token}` } }
+            )
+            
+            toast.success(data.message || "Exclusive item added to cart")
+            fetchCart() // Sync global cart state
+        } catch (error: any) {
+            console.error(error)
+            toast.error(error.response?.data?.message || "Failed to add item")
+        } finally {
+            setAddingToCart(null)
         }
     }
 
@@ -126,7 +152,7 @@ const ShopPage = () => {
                          <div className="space-y-4">
                              <p className="text-xs tracking-wider opacity-60">Customer support available during business hours.</p>
                              <button className="w-full py-5 bg-transparent border border-[#1F1F1F] text-[10px] font-black uppercase tracking-[0.4em] hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all">
-                                Send Message
+                                 Send Message
                              </button>
                          </div>
                     </div>
@@ -136,8 +162,8 @@ const ShopPage = () => {
                 <div className="lg:col-span-3">
                     <div className="flex items-center justify-between mb-16 border-b border-[#1F1F1F] pb-10">
                          <div className="space-y-2">
-                            <h2 className="text-3xl font-serif italic text-[#F8F8F8] tracking-widest uppercase">The Inventory</h2>
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Showing {items.length} available items</p>
+                             <h2 className="text-3xl font-serif italic text-[#F8F8F8] tracking-widest uppercase">The Inventory</h2>
+                             <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Showing {items.length} available items</p>
                          </div>
                     </div>
 
@@ -176,9 +202,15 @@ const ShopPage = () => {
                                                 {item.description || "A premium selection curated for excellence and long-lasting satisfaction."}
                                             </p>
 
-                                            <button className="w-full py-5 flex items-center justify-center gap-4 bg-[#0A0A0A] border border-[#1F1F1F] hover:bg-[#D4AF37] hover:border-[#D4AF37] hover:text-[#0A0A0A] transition-all duration-500 overflow-hidden group/btn relative">
+                                            <button 
+                                                onClick={() => addToCart(item._id)}
+                                                disabled={addingToCart === item._id}
+                                                className="w-full py-5 flex items-center justify-center gap-4 bg-[#0A0A0A] border border-[#1F1F1F] hover:bg-[#D4AF37] hover:border-[#D4AF37] hover:text-[#0A0A0A] transition-all duration-500 overflow-hidden group/btn relative disabled:opacity-50"
+                                            >
                                                 <div className="absolute inset-0 bg-[#D4AF37] translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500"></div>
-                                                <span className="relative z-10 text-[10px] font-black uppercase tracking-[0.5em] group-hover/btn:text-[#0A0A0A]">Add To Cart</span>
+                                                <span className="relative z-10 text-[10px] font-black uppercase tracking-[0.5em] group-hover/btn:text-[#0A0A0A]">
+                                                    {addingToCart === item._id ? "Securing Asset..." : "Add To Cart"}
+                                                </span>
                                                 <BiShoppingBag className="relative z-10 h-4 w-4 group-hover/btn:text-[#0A0A0A]" />
                                             </button>
                                         </div>
