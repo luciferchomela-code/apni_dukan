@@ -6,59 +6,71 @@ import getBuffer from "../config/datauri.js";
 import axios from "axios";
 import jwt from "jsonwebtoken";
 
-export const addshop = asyncHandler(async (req, res) => {
+export const addshop = asyncHandler(async (req,res) => {
+
     const user = req.user;
-    if (!user) {
-        return res.status(401).json({ message: "unauthorized seller" });
+
+    if(!user){
+        return res.status(401).json({message:"please login"});
     }
 
-    const existingShop = await shopModel.findOne({ ownerId: user._id });
-    if (existingShop) {
-        return res.status(400).json({ message: "You already have a shop registered" });
+    const existingshop = await shopModel.findOne({ownerId:user._id});
+
+    if(existingshop){
+        return res.status(409).json({message:"the user already have one shop"});
     }
 
-    const { name, description, latitude, longitude, formattedAddress, phone, shoptype } = req.body;
+    const {
+        name,
+        description,
+        latitude,
+        longitude,
+        formattedAddress,
+        phone,
+        shoptype
+    } = req.body;
 
-    // Strict Validation
-    if (!name || !latitude || !longitude || !shoptype || !phone) {
-        return res.status(400).json({ message: "All fields are required" });
+    if(!name || !latitude || !longitude || !phone || !shoptype){
+        return res.status(400).json({message:"all fields are required"});
     }
 
-    const file = req.file;
-    if (!file) {
-        return res.status(400).json({ message: "Please upload a shop image" });
+    const shopimg = req.file;
+
+    if(!shopimg){
+        return res.status(400).json({message:"please upload shop image"});
     }
 
-    const fileBuffer = getBuffer(file);
-    if (!fileBuffer?.content) {
-        return res.status(500).json({ message: "Failed to process image" });
+    const fileBuffer = getBuffer(shopimg);
+
+    if(!fileBuffer?.content){
+        return res.status(500).json({message:"failed to process image"});
     }
 
-    // Upload image to Utils Service
     const { data: uploadResult } = await axios.post(
         `${process.env.UTILS_SERVICE}/api/upload`,
-        { buffer: fileBuffer.content }
+        { buffer:fileBuffer.content }
     );
 
     const newShop = await shopModel.create({
         name,
         description,
         phone,
-        shoptype, // Successfully saved
-        image: uploadResult.url,
-        ownerId: user._id,
-        autoLocation: {
-            type: "Point",
-            coordinates: [Number(longitude), Number(latitude)],
+        shoptype,
+        image:uploadResult.url,
+        ownerId:user._id,
+        autoLocation:{
+            type:"Point",
+            coordinates:[Number(longitude),Number(latitude)],
             formattedAddress,
         },
         isVerified:false,
     });
 
-    return res.status(201).json({ 
-        message: "Shop created successfully",
-        shop: newShop 
+    return res.status(201).json({
+        message:"shop created successfully",
+        shop:newShop
     });
+
 });
 
 export const fetchMyShop = asyncHandler(async (req, res) => {
@@ -71,13 +83,9 @@ export const fetchMyShop = asyncHandler(async (req, res) => {
     if (!shop) {
         return res.status(404).json({ message: "No shop found" });
     }
-
-    // Check if shopId is already in the token/user object
     if (!req.user.shopId) {
-        // NUMERICAL FIX: Convert Mongoose Doc to Plain Object
         const userPayload = req.user.toObject ? req.user.toObject() : req.user;
 
-        // Remove sensitive fields from the new token payload
         delete userPayload.password; 
 
         const token = jwt.sign(
@@ -143,7 +151,7 @@ export const updateStatusShop = asyncHandler(async(req,res)=>{
     const shop = await shopModel.findOneAndUpdate(
         {ownerId:req.user._id},
         {isOpen:status},
-        {new:true});
+        {returnDocument:'after'});
     if(!shop){
         return res.status(404).json({message:"Shop not found"})
     }
@@ -159,9 +167,7 @@ export const getNearbyShop = asyncHandler(async(req,res)=>{
         return res.status(400).json({message:"latitude and longitude are required"})
     }
 
-    const query ={
-        isVerified:true
-    }
+    const query = {}
     if(search && typeof search===`string`){
        query.name = {$regex:search,$options:"i"};
     }
@@ -197,6 +203,7 @@ export const getNearbyShop = asyncHandler(async(req,res)=>{
             }
          },
     ])
+    console.log(shops);
     res.json({
         message:"Shop fetched successfully",
         count:shops.length,
@@ -214,3 +221,5 @@ export const fetchSingleShop = asyncHandler(async(req,res)=>{
         shop
     })
 })
+
+

@@ -73,8 +73,6 @@ export const deleteItem = asyncHandler(async (req, res) => {
     }
 
     const { itemId } = req.params; 
-    
-    // Find item by ID first
     const item = await shopItemModel.findById(itemId);
 
     if (!item) {
@@ -82,8 +80,6 @@ export const deleteItem = asyncHandler(async (req, res) => {
             message: "Item not found"
         });
     }
-
-    // Verify ownership safely using string comparison
     if (item.ownerId.toString() !== req.user._id.toString()) {
         return res.status(403).json({
             message: "You don't have permission to delete this item"

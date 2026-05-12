@@ -8,6 +8,7 @@ import cors from "cors";
 import router from "./src/routes/shop.route.js";
 import itemRouter from "./src/routes/Item.route.js";
 import cartRouter from "./src/routes/cart.route.js";
+import addressRouter from "./src/routes/address.js";
 
 const app = express();
 
@@ -20,6 +21,7 @@ const PORT = process.env.PORT || 5001;
 app.use("/api/shop", router); 
 app.use("/api/item", itemRouter)
 app.use("/api/cart",cartRouter)
+app.use("/api/address", addressRouter)
 connectDB();
 
 app.listen(PORT, () => {
