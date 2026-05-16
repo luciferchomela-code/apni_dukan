@@ -336,7 +336,7 @@ const Cart = () => {
 
                                 <span className="text-[#D4AF37] font-black italic">
                                     {location && shopLocation?.coordinates
-                                        ? `₹${(distanceKm(location.latitude, location.longitude, shopLocation.coordinates[1], shopLocation.coordinates[0]) * 5).toFixed(2)}`
+                                        ? `₹${Math.ceil(distanceKm(location.latitude, location.longitude, shopLocation.coordinates[1], shopLocation.coordinates[0]) * 5)}`
                                         : "Calculating..."}
                                 </span>
 
@@ -352,13 +352,17 @@ const Cart = () => {
 
                             <span className="text-4xl font-black text-[#D4AF37] tracking-tighter">
                                 ₹{location && shopLocation?.coordinates
-                                    ? (subTotal + parseFloat((distanceKm(location.latitude, location.longitude, shopLocation.coordinates[1], shopLocation.coordinates[0]) * 5).toFixed(2))).toFixed(2)
-                                    : subTotal}
+                                    ? (subTotal + Math.ceil(distanceKm(location.latitude, location.longitude, shopLocation.coordinates[1], shopLocation.coordinates[0]) * 5)).toFixed(2)
+                                    : subTotal.toFixed(2)}
                             </span>
 
                         </div>
 
-                        <button className="w-full py-6 bg-[#D4AF37] text-[#0A0A0A] text-[10px] font-black uppercase tracking-[0.6em] transition-all hover:tracking-[0.8em] shadow-[0_0_20px_rgba(212,175,55,0.2)]">
+                        <button
+                            id="btn-begin-checkout"
+                            onClick={() => navigate("/checkout")}
+                            className="w-full py-6 bg-[#D4AF37] text-[#0A0A0A] text-[10px] font-black uppercase tracking-[0.6em] transition-all hover:tracking-[0.8em] shadow-[0_0_20px_rgba(212,175,55,0.2)]"
+                        >
                             Begin Checkout
                         </button>
 

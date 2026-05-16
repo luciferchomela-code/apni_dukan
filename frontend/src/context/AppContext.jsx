@@ -53,15 +53,15 @@ export const AppProvider = ({ children }) => {
                 }
             )
 
-            console.log("User data retrieved:", data.user?.role)
+            console.log("User data retrieved:", data?.role)
 
-            if (data.user) {
+            if (data && data._id) {
 
-                setUser(data.user)
+                setUser(data)
 
                 setIsAuth(true)
 
-                if (data.user.role !== "customer") {
+                if (data.role !== "customer") {
 
                     console.log("Non-customer identified. Disabling global loading.")
 

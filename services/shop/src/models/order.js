@@ -1,0 +1,94 @@
+import mongoose from "mongoose";
+
+const orderSchema = new mongoose.Schema({
+    userId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"User",
+        required:true
+    },
+    shopId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Shop",
+        required:true
+    },
+    shopName:{
+        type:String,
+        required:true
+    },
+    riderId:{
+        type:String,
+        default:null
+    },
+    riderName:{
+        type:String,
+        default:null
+    },
+    riderPhone:{
+        type:String,
+        default:null
+    },
+    riderAccount:{
+        type:String,
+        default:null
+    },
+    distance:{
+        type:String,
+        default:null
+    },
+    items:[
+        {
+            itemId:String,
+            name:String,
+            price:Number,
+            quantity:Number
+        }
+    ],
+    subtotal:{
+        type:Number,
+        required:true
+    },
+    deliveryFee:Number,
+    platformFee:Number,
+    totalAmount:Number,
+    deliveryAddress:{
+        formattedAddress:{type:String,required:true},
+        latitude:{type:Number},
+        longitude:{type:Number},
+        mobile:{type:String,required:true}
+    },
+    status:{
+        type:String,
+        enum:[
+            "placed",
+            "accepted",
+            "preaparing",
+            "ready_for_rider",
+            "rider_assigned",
+            "picked_up",
+            "delivered",
+            "cancelled"
+        ],
+        default:"placed"
+    },
+    paymentMethod:{
+        type:String,
+        enum:["razorpay","stripe"],
+        required:true,
+    },
+    paymentStatus:{
+        type:String,
+        enum:["paid","pending","failed"],
+        default:"pending",
+    },
+    expiresAt:{
+        type:Date,
+        index:{
+            expireAfterSeconds:0
+        }
+    },
+},{
+    timestamps:true
+})
+
+const Order = mongoose.model("Order",orderSchema)
+export default Order
