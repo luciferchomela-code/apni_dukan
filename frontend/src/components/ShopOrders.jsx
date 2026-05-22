@@ -50,7 +50,7 @@ const ShopOrders = ({ shopId }) => {
     const [activeTab, setActiveTab] = useState("active");
     const [refreshing, setRefreshing] = useState(false);
 
-    const { socket } = useSocket();
+    const { socket, socketReady } = useSocket();
     const audioRef = useRef(null);
 
     useEffect(() => {
@@ -125,7 +125,7 @@ const ShopOrders = ({ shopId }) => {
     }, [shopId]);
 
     useEffect(() => {
-        if (!socket || !shopId) return;
+        if (!socket || !socketReady || !shopId) return;
         
         socket.emit("join_shop", shopId);
 
@@ -144,7 +144,7 @@ const ShopOrders = ({ shopId }) => {
             socket.off("order:picked_up", onRefresh);
             socket.off("order:delivered", onRefresh);
         };
-    }, [socket, shopId]);
+    }, [socket, socketReady, shopId]);
 
     const activeOrders = orders.filter((order) => ACTIVE_STATUS.includes(order.status));
     const completedOrders = orders.filter((order) => !ACTIVE_STATUS.includes(order.status));
