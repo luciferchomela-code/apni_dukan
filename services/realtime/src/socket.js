@@ -56,6 +56,42 @@ export const initSocket = (server) => {
 
         console.log("Socket rooms:", [...socket.rooms]);
 
+        socket.on("join_shop", (shopId) => {
+            if (shopId) {
+                socket.join(`shop:${shopId}`);
+                console.log(`User ${userId} joined shop:${shopId}`);
+            }
+        });
+
+        // ── Chat Events ──
+        socket.on("chat:rider_to_shop", (data) => {
+            if (data.room) {
+                socket.to(data.room).emit("chat:from_rider", data);
+                console.log(`Chat: rider → shop room ${data.room}`);
+            }
+        });
+
+        socket.on("chat:rider_to_user", (data) => {
+            if (data.room) {
+                socket.to(data.room).emit("chat:from_rider", data);
+                console.log(`Chat: rider → user room ${data.room}`);
+            }
+        });
+
+        socket.on("chat:shop_to_rider", (data) => {
+            if (data.room) {
+                socket.to(data.room).emit("chat:from_shop", data);
+                console.log(`Chat: shop → rider room ${data.room}`);
+            }
+        });
+
+        socket.on("chat:user_to_rider", (data) => {
+            if (data.room) {
+                socket.to(data.room).emit("chat:from_user", data);
+                console.log(`Chat: user → rider room ${data.room}`);
+            }
+        });
+
         socket.on("disconnect", () => {
 
             console.log("User disconnected:", userId);

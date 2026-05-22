@@ -61,7 +61,7 @@ const orderSchema = new mongoose.Schema({
         enum:[
             "placed",
             "accepted",
-            "preaparing",
+            "preparing",
             "ready_for_rider",
             "rider_assigned",
             "picked_up",

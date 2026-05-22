@@ -1,9 +1,12 @@
 import mongoose from "mongoose";
 import asyncHandler from "../middlewares/trycatch.js";
+import axios from "axios";
 
 import Address from "../models/address.js";
 import Cart from "../models/cart.model.js";
 import Order from "../models/order.js";
+import Shop from "../models/shop.model.js";
+import publishEvent from "../config/order.publisher.js";
 
 export const createOrder = asyncHandler(async (req, res) => {
     const user = req.user;
@@ -126,7 +129,7 @@ export const createOrder = asyncHandler(async (req, res) => {
         ).toFixed(2)
     );
     const riderAmount =
-        Math.ceil(parsedDistance) * 17;
+        Math.ceil(parsedDistance) * 15;
 
     const expiresAt = new Date(
         Date.now() + 15 * 60 * 1000
@@ -313,6 +316,24 @@ export const updateOrderStatus = asyncHandler(async(req,res)=>{
             "x-internal-key":process.env.INTERNAL_SERVICE_KEY,
         },
     });
+
+    if(status==="ready_for_rider"){
+        console.log("emit rdy for rider",order._id.toString());
+        if(!shop.autoLocation || !shop.autoLocation.coordinates){
+            console.error("Shop has no autoLocation, cannot search riders");
+            return res.status(400).json({
+                message:"Shop location is missing. Please update your shop location."
+            });
+        }
+        publishEvent("ORDER_READY_FOR_RIDER",{
+            orderId:order._id.toString(),
+            shopId:shop._id.toString(),
+            location:shop.autoLocation,
+            order: order,
+        });
+
+    }
+    
     return res.json({
         message:"Order status updated successfully",
         order:order,
@@ -346,14 +367,14 @@ export const fetchSingleOrder = asyncHandler(async(req,res)=>{
             message:"Unauthorized",
         })
     }
-    const {orderId} = req.params.id;
+    const orderId = req.params.id;
     const order = await Order.findById(orderId);
     if(!order){
         return res.status(404).json({
             message:"Order not found",
         })
     }
-    if(order.userId !== user._id.toString()){
+    if(order.userId.toString() !== user._id.toString()){
         return res.status(403).json({
             message:"Forbidden",
         })
@@ -362,3 +383,141 @@ export const fetchSingleOrder = asyncHandler(async(req,res)=>{
         order,
     })
 })
+
+export const assignRiderToOrder = asyncHandler(async (req, res) => {
+    if (req.headers["x-internal-key"] !== process.env.INTERNAL_SERVICE_KEY) {
+        return res.status(401).json({
+            message: "Unauthorized",
+        });
+    }
+
+    const { orderId, riderId, riderName, riderPhone } = req.body;
+
+    // Atomically assign rider only if not already assigned
+    const orderUpdated = await Order.findOneAndUpdate(
+        { _id: orderId, riderId: { $exists: false } },
+        {
+            riderId,
+            riderName,
+            riderPhone,
+            status: "rider_assigned",
+        },
+        { new: true }
+    );
+
+    if (!orderUpdated) {
+        return res.status(400).json({
+            message: "Rider is already assigned or order not found",
+        });
+    }
+
+    // Notify Shop
+    await axios.post(`${process.env.REALTIME_SERVICE}/api/v1/internal/emit`, {
+        event: "rider_assigned",
+        room: `shop:${orderUpdated.shopId}`,
+        payload: orderUpdated,
+    }, {
+        headers: { "x-internal-key": process.env.INTERNAL_SERVICE_KEY },
+    });
+
+    // Notify User
+    await axios.post(`${process.env.REALTIME_SERVICE}/api/v1/internal/emit`, {
+        event: "rider_assigned",
+        room: `user:${orderUpdated.userId}`,
+        payload: orderUpdated,
+    }, {
+        headers: { "x-internal-key": process.env.INTERNAL_SERVICE_KEY },
+    });
+
+    res.json({
+        message: "Rider assigned to order successfully",
+        success: true,
+        order: orderUpdated,
+    });
+});
+
+export const getCurrentOrderForRider = asyncHandler(async (req, res) => {
+    if (req.headers["x-internal-key"] !== process.env.INTERNAL_SERVICE_KEY) {
+        return res.status(401).json({
+            message: "Unauthorized",
+        });
+    }
+    const { riderId } = req.query;
+    if (!riderId) {
+        return res.status(400).json({
+            message: "Rider ID is required",
+        });
+    }
+    const order = await Order.findOne({ riderId: riderId, status: { $ne: "delivered" } }).populate("shopId");
+    if (!order) {
+        return res.status(404).json({
+            message: "No order found for this rider",
+        });
+    }
+    return res.json({
+        order,
+    });
+});
+
+export const updateOrderStatusRider = asyncHandler(async (req, res) => {
+    if (req.headers["x-internal-key"] !== process.env.INTERNAL_SERVICE_KEY) {
+        return res.status(401).json({
+            message: "Unauthorized",
+        });
+    }
+    const { orderId } = req.body;
+    if (!orderId) {
+        return res.status(400).json({
+            message: "Order ID is required",
+        });
+    }
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+        return res.status(404).json({
+            message: "No order found",
+        });
+    }
+
+    let newStatus = "";
+    let eventName = "";
+
+    if (order.status === "rider_assigned") {
+        newStatus = "picked_up";
+        eventName = "order:picked_up";
+    } else if (order.status === "picked_up") {
+        newStatus = "delivered";
+        eventName = "order:delivered";
+    } else {
+        return res.status(400).json({
+            message: `Cannot update status from ${order.status}`,
+        });
+    }
+
+    order.status = newStatus;
+    await order.save();
+
+    // Notification payloads
+    const notificationPayload = {
+        event: eventName,
+        payload: order,
+    };
+
+    // Notify shop and user
+    const rooms = [`shop:${order.shopId}`, `user:${order.userId}`];
+
+    for (const room of rooms) {
+        await axios.post(`${process.env.REALTIME_SERVICE}/api/v1/internal/emit`, {
+            ...notificationPayload,
+            room: room,
+        }, {
+            headers: { "x-internal-key": process.env.INTERNAL_SERVICE_KEY },
+        }).catch(err => console.error(`Failed to emit to ${room}:`, err.message));
+    }
+
+    return res.json({
+        message: "Order status updated successfully",
+        success: true,
+        order: order,
+    });
+});

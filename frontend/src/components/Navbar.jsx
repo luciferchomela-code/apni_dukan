@@ -7,7 +7,7 @@ import { BiMapPin, BiSearch } from "react-icons/bi"
 
 const Navbar = () => {
 
-    const { isAuth, city, quantity } = useAppData()
+    const { isAuth, city, quantity, user } = useAppData()
 
     const currLocation = useLocation()
 
@@ -53,36 +53,47 @@ const Navbar = () => {
 
                 <div className='flex items-center gap-8'>
 
-                    <Link to='/cart' className='relative group'>
+                    {user?.role !== "rider" && user?.role !== "seller" && (
+                        <Link to='/cart' className='relative group'>
+                            <CgShoppingCart className='h-6 w-6 text-[#A0A0A0] group-hover:text-[#D4AF37] transition-colors' />
+                            <span className='absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#D4AF37] text-[9px] font-black text-[#0A0A0A]'>
+                                {quantity}
+                            </span>
+                        </Link>
+                    )}
 
-                        <CgShoppingCart className='h-6 w-6 text-[#A0A0A0] group-hover:text-[#D4AF37] transition-colors' />
+                    {user?.role === "rider" && (
+                        <Link
+                            to="/rider-dashboard"
+                            className='text-[10px] font-black text-[#D4AF37] uppercase tracking-[0.3em] hover:opacity-70 transition-opacity'
+                        >
+                            Dashboard
+                        </Link>
+                    )}
 
-                        <span className='absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#D4AF37] text-[9px] font-black text-[#0A0A0A]'>
-
-                            {quantity}
-
-                        </span>
-
-                    </Link>
+                    {user?.role === "seller" && (
+                        <Link
+                            to="/shop"
+                            className='text-[10px] font-black text-[#D4AF37] uppercase tracking-[0.3em] hover:opacity-70 transition-opacity'
+                        >
+                            Shop
+                        </Link>
+                    )}
 
                     {isAuth ? (
-
                         <Link
                             to="/account"
                             className='text-[10px] font-black text-[#D4AF37] uppercase tracking-[0.3em] hover:opacity-70 transition-opacity'
                         >
                             Account
                         </Link>
-
                     ) : (
-
                         <Link
                             to="/login"
                             className='text-[10px] font-black text-[#D4AF37] uppercase tracking-[0.3em] bg-[#D4AF37]/10 px-6 py-2.5 border border-[#D4AF37]/20 rounded-full hover:bg-[#D4AF37] hover:text-[#0A0A0A] transition-all'
                         >
                             Sign In
                         </Link>
-
                     )}
 
                 </div>

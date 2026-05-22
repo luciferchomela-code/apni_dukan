@@ -1,14 +1,21 @@
 import express from "express";
-import { createOrder, fetchOrderForPayment } from "../controllers/order.js"
-import { isAuth } from "../middlewares/isAuth.js";
-import { isSeller } from "../middlewares/isSeller.js";
+import { createOrder, fetchOrderForPayment, fetchShopOrder, updateOrderStatus, getMyOrders, fetchSingleOrder, assignRiderToOrder, getCurrentOrderForRider, updateOrderStatusRider } from "../controllers/order.js"
+import { isAuth, isSeller } from "../middlewares/isAuth.js";
 const router = express.Router();
 
 router.post("/new", isAuth, createOrder);
 router.get("/payment/:id", fetchOrderForPayment);
-router.get("/order/:shopId",isAuth,isSeller,fetchShopOrder);
-router.put("/:orderId",isAuth,isSeller,updateOrderStatus);
-router.get("/my",isAuth,getMyOrders);
-router.get("/:id",isAuth,fetchSingleOrder);
- 
+router.get("/my", isAuth, getMyOrders);
+
+// Internal routes (called by rider service with x-internal-key) — must come BEFORE wildcards
+router.put("/assign/rider", assignRiderToOrder);
+router.get("/current/rider", getCurrentOrderForRider);
+router.put("/update/rider", updateOrderStatusRider);
+
+// Shop-owner routes
+router.get("/order/:shopId", isAuth, isSeller, fetchShopOrder);
+router.put("/:orderId", isAuth, isSeller, updateOrderStatus);
+
+// Wildcard last
+router.get("/:id", isAuth, fetchSingleOrder);
 export default router;

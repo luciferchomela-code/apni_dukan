@@ -6,6 +6,7 @@ import AddShop from "./AddShop";
 import ShopProfile from "./ShopProfile";
 import Items from "../components/Items";
 import AddItem from "../components/AddItem";
+import ShopOrders from "../components/ShopOrders";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Shop = () => {
@@ -114,7 +115,7 @@ const Shop = () => {
                         {[
                             { key: "menu", label: "Menu Item" },
                             { key: "add-item", label: "Add Item" },
-                            { key: "sales", label: "Sales" },
+                            { key: "orders", label: "Orders" },
                         ].map((t) => (
 
                             <button
@@ -164,18 +165,8 @@ const Shop = () => {
                                     />
                                 )}
 
-                                {tab === "sales" && (
-
-                                    <div className="py-32 flex flex-col items-center justify-center space-y-8 bg-[#0A0A0A] border border-[#1F1F1F] rounded-[0.25rem]">
-
-                                        <div className="h-12 w-12 border border-[#D4AF37]/20 border-t-[#D4AF37] rounded-full animate-spin"></div>
-
-                                        <p className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.6em]">
-                                            System Intelligence Decrypting
-                                        </p>
-
-                                    </div>
-
+                                {tab === "orders" && (
+                                    <ShopOrders shopId={shop._id} />
                                 )}
 
                             </motion.div>

@@ -24,10 +24,11 @@ export const createRazorpayOrder = async (req, res) => {
 
         const razorpayOrder = await razorpay.orders.create(options);
 
-        res.json({
-            razorpayOrderId: razorpayOrder.id,
-            key: process.env.RAZORPAY_KEY_ID,
-        });
+            console.log("PAYMENT CREATE DATA:", { razorpayOrderId: razorpayOrder.id, key: process.env.RAZORPAY_KEY_ID });
+            res.json({
+                razorpayOrderId: razorpayOrder.id,
+                key: process.env.RAZORPAY_KEY_ID,
+            });
 
     } catch (error) {
         res.status(500).json({

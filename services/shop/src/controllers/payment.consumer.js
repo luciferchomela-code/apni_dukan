@@ -1,6 +1,7 @@
 import { getChannel } from "../config/rabbitmq.js";
 import Order from "../models/order.js";
 import Cart from "../models/cart.model.js";
+import axios from "axios";
 
 export const startPaymentConsumer = async() => {
 
@@ -56,6 +57,17 @@ export const startPaymentConsumer = async() => {
                     "processed successfully"
                 );
 
+                await axios.post(`${process.env.REALTIME_SERVICE}/api/v1/internal/emit`,{
+                    event:"order:new",
+                    payload:{
+                        orderId:order._id.toString(),
+                    },
+                    rooms:[`shop:${order.shopId}`]
+                },{
+                    headers:{
+                        "x-internal-key":process.env.INTERNAL_SERVICE_KEY,
+                    },
+                });
                 // Clear cart after successful payment
                 await Cart.deleteMany({ userId: order.userId });
 

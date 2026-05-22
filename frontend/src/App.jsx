@@ -13,6 +13,9 @@ import PaymentSuccess from "./pages/PaymentSuccess.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PublicRoute from "./components/PublicRoute.jsx";
 import { Address } from "./pages/address.jsx";
+import MyOrders from "./pages/MyOrders.jsx";
+import OrdersPage from "./pages/OrdersPage.jsx";
+import RiderDashboard from "./pages/RiderDashboard.jsx";
 
 const App = () => {
     return (
@@ -23,7 +26,6 @@ const App = () => {
                 <Route element={<PublicRoute />}> */}
                     <Route path="/login" element={<Login />} />
                 {/* </Route> */}
-
                 {/* Protected routes
                 <Route element={<ProtectedRoute />}> */}
                     <Route path="/select-role" element={<SelectRole />} />
@@ -32,6 +34,8 @@ const App = () => {
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/checkout" element={<Checkout />} />
                     <Route path="/payment-success/:paymentId" element={<PaymentSuccess />} />
+                    <Route path="/orders" element={<MyOrders />} />
+                    <Route path="/orders/:id" element={<OrdersPage />} />
                 {/* </Route> */}
 
                 {/* Public routes */}
@@ -40,6 +44,7 @@ const App = () => {
                     <Route path="/address" element={<Address />} />
                 {/* </Route> */}
                 <Route path="/shop/:id" element={<ShopPage />} />
+                <Route path="/rider-dashboard" element={<RiderDashboard />} />
             </Routes> 
             <Toaster />
         </BrowserRouter>
