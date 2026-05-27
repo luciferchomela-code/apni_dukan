@@ -12,7 +12,7 @@ import Checkout from "./pages/Checkout.jsx";
 import PaymentSuccess from "./pages/PaymentSuccess.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PublicRoute from "./components/PublicRoute.jsx";
-import { Address } from "./pages/address.jsx";
+import { Address } from "./pages/Address.jsx";
 import MyOrders from "./pages/MyOrders.jsx";
 import OrdersPage from "./pages/OrdersPage.jsx";
 import RiderDashboard from "./pages/RiderDashboard.jsx";
