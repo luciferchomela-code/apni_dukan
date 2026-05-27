@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import notificationSound from "../../assets/universfield-happy-message-ping-351298.mp3";
+import riderStateSound from "../../assets/son_duquotidient-message-envoye-iphone-apple-391098.mp3";
 import { useSocket } from "../context/SocketContext.jsx";
 import { shopService } from "../main";
 import axios from "axios";
@@ -52,10 +53,14 @@ const ShopOrders = ({ shopId }) => {
 
     const { socket, socketReady } = useSocket();
     const audioRef = useRef(null);
+    const riderAudioRef = useRef(null);
 
     useEffect(() => {
         audioRef.current = new Audio(notificationSound);
         audioRef.current.load();
+
+        riderAudioRef.current = new Audio(riderStateSound);
+        riderAudioRef.current.load();
     }, []);
 
     const playNotificationSound = () => {
@@ -68,6 +73,14 @@ const ShopOrders = ({ shopId }) => {
     const unlockAudio = () => {
         if (audioRef.current) {
             audioRef.current.currentTime = 0;
+            if (riderAudioRef.current) {
+                riderAudioRef.current.volume = 0;
+                riderAudioRef.current.play().then(() => {
+                    riderAudioRef.current.pause();
+                    riderAudioRef.current.volume = 1;
+                    riderAudioRef.current.currentTime = 0;
+                }).catch(e => console.log(e));
+            }
             audioRef.current.play().then(() => {
                 setAudioUnlocked(true);
                 toast.success("Notifications enabled!");
@@ -130,19 +143,28 @@ const ShopOrders = ({ shopId }) => {
         socket.emit("join_shop", shopId);
 
         const onRefresh = () => {
+            playNotificationSound();
+            fetchOrders();
+        };
+
+        const onRiderUpdate = () => {
+            if (riderAudioRef.current) {
+                riderAudioRef.current.currentTime = 0;
+                riderAudioRef.current.play().catch(e => {});
+            }
             fetchOrders();
         };
 
         socket.on("order:new", onRefresh);
-        socket.on("rider_assigned", onRefresh);
-        socket.on("order:picked_up", onRefresh);
-        socket.on("order:delivered", onRefresh);
+        socket.on("rider_assigned", onRiderUpdate);
+        socket.on("order:picked_up", onRiderUpdate);
+        socket.on("order:delivered", onRiderUpdate);
 
         return () => {
             socket.off("order:new", onRefresh);
-            socket.off("rider_assigned", onRefresh);
-            socket.off("order:picked_up", onRefresh);
-            socket.off("order:delivered", onRefresh);
+            socket.off("rider_assigned", onRiderUpdate);
+            socket.off("order:picked_up", onRiderUpdate);
+            socket.off("order:delivered", onRiderUpdate);
         };
     }, [socket, socketReady, shopId]);
 
@@ -255,7 +277,7 @@ const OrderCard = ({ order, isExpanded, onToggle, onUpdateStatus, updating }) =>
     
     const calculateTotal = () => {
         if (order.totalAmount) return order.totalAmount;
-        return order.items?.reduce((acc, curr) => acc + ((curr.item?.price || 0) * (curr.quantity || 1)), 0) || 0;
+        return order.items?.reduce((acc, curr) => acc + ((curr.price || 0) * (curr.quantity || 1)), 0) || 0;
     };
 
     return (
@@ -360,15 +382,15 @@ const OrderCard = ({ order, isExpanded, onToggle, onUpdateStatus, updating }) =>
                                                 </div>
                                                 <div>
                                                     <span className="font-semibold text-gray-800 dark:text-gray-200 block">
-                                                        {item.item?.name || "Unknown Item"}
+                                                        {item.name || "Unknown Item"}
                                                     </span>
                                                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                        ₹{item.item?.price || 0} each
+                                                        ₹{item.price || 0} each
                                                     </span>
                                                 </div>
                                             </div>
                                             <span className="font-bold text-gray-800 dark:text-gray-200">
-                                                ₹{(item.item?.price || 0) * (item.quantity || 1)}
+                                                ₹{(item.price || 0) * (item.quantity || 1)}
                                             </span>
                                         </div>
                                     ))}

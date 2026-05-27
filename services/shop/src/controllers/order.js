@@ -395,14 +395,20 @@ export const assignRiderToOrder = asyncHandler(async (req, res) => {
 
     // Atomically assign rider only if not already assigned
     const orderUpdated = await Order.findOneAndUpdate(
-        { _id: orderId, riderId: { $exists: false } },
+        { 
+            _id: orderId, 
+            $or: [
+                { riderId: { $exists: false } },
+                { riderId: null }
+            ] 
+        },
         {
             riderId,
             riderName,
             riderPhone,
             status: "rider_assigned",
         },
-        { new: true }
+        { returnDocument: "after" }
     );
 
     if (!orderUpdated) {
@@ -520,4 +526,41 @@ export const updateOrderStatusRider = asyncHandler(async (req, res) => {
         success: true,
         order: order,
     });
+});
+
+export const getPendingOrdersForRider = asyncHandler(async (req, res) => {
+    if (req.headers["x-internal-key"] !== process.env.INTERNAL_SERVICE_KEY) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+    // Optional: filter by location if lat/lng query params provided
+    const { latitude, longitude, maxDistance } = req.query;
+
+    const baseQuery = {
+        status: "ready_for_rider",
+        $or: [
+            { riderId: { $exists: false } },
+            { riderId: null }
+        ]
+    };
+
+    let orders;
+    if (latitude && longitude) {
+        // Find shops near rider, then orders from those shops
+        const nearbyShops = await Shop.find({
+            autoLocation: {
+                $near: {
+                    $geometry: { type: "Point", coordinates: [Number(longitude), Number(latitude)] },
+                    $maxDistance: Number(maxDistance) || 100000
+                }
+            }
+        }).select("_id");
+        const shopIds = nearbyShops.map(s => s._id);
+        orders = await Order.find({ ...baseQuery, shopId: { $in: shopIds } })
+            .sort({ createdAt: -1 })
+            .limit(50);
+    } else {
+        orders = await Order.find(baseQuery).sort({ createdAt: -1 }).limit(50);
+    }
+
+    return res.json({ success: true, count: orders.length, orders });
 });

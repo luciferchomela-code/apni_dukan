@@ -4,6 +4,7 @@ import { useSocket } from "../context/SocketContext.jsx";
 import axios from "axios";
 import { shopService } from "../main";
 import notificationSound from "../../assets/universfield-happy-message-ping-351298.mp3";
+import riderStateSound from "../../assets/son_duquotidient-message-envoye-iphone-apple-391098.mp3";
 import { motion } from "framer-motion";
 import { 
   BiPackage, BiMap, BiStore, BiMoney, BiTimeFive, 
@@ -31,6 +32,7 @@ const OrdersPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [audio] = useState(() => new Audio(notificationSound));
+  const [riderAudio] = useState(() => new Audio(riderStateSound));
 
   const fetchOrder = async () => {
     try {
@@ -67,14 +69,26 @@ const OrdersPage = () => {
       await fetchOrder();
     };
 
+    const onRiderUpdate = async () => {
+      riderAudio.currentTime = 0;
+      riderAudio.play().catch((e) => console.warn("Audio play error:", e));
+      await fetchOrder();
+    };
+
     socket.on("order_update", onOrderUpdate);
     socket.on("order:new", onOrderUpdate);
+    socket.on("rider_assigned", onRiderUpdate);
+    socket.on("order:picked_up", onRiderUpdate);
+    socket.on("order:delivered", onRiderUpdate);
 
     if (order?.shopId) joinShopRoom(order.shopId);
 
     return () => {
       socket.off("order_update", onOrderUpdate);
       socket.off("order:new", onOrderUpdate);
+      socket.off("rider_assigned", onRiderUpdate);
+      socket.off("order:picked_up", onRiderUpdate);
+      socket.off("order:delivered", onRiderUpdate);
     };
   }, [socket, order?.shopId]);
 

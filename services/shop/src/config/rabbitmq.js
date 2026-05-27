@@ -5,6 +5,12 @@ let channel
 export const connectRabbitMQ = async () => {
     try {
         const connection = await amqp.connect(process.env.RABBITMQ_URL)
+        connection.on("error", (err) => {
+            console.error("RabbitMQ connection error:", err);
+        });
+        connection.on("close", () => {
+            console.warn("RabbitMQ connection closed.");
+        });
         channel = await connection.createChannel()
         await channel.assertQueue(process.env.PAYMENT_QUEUE, {
             durable: true,

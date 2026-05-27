@@ -157,14 +157,14 @@ export const toggleRiderAvailablity = asyncHandler(async (req, res) => {
 
 export const acceptOrder = asyncHandler(async (req, res) => {
     const riderUserId = req.user;
-    const { orderId } = req.body;
+    const { orderId } = req.params;
     if (!riderUserId) {
         return res.status(400).json({
             message: "Unauthorized"
         });
     }
     const rider = await Rider.findOne({
-        user: riderUserId
+        user: riderUserId._id || riderUserId
     });
     if (!rider) {
         return res.status(404).json({
@@ -172,8 +172,8 @@ export const acceptOrder = asyncHandler(async (req, res) => {
         });
     }
     try {
-        const {data} = await axios.post(
-            `${process.env.ORDER_SERVICE}/api/order/assign/rider`,
+        const {data} = await axios.put(
+            `${process.env.SHOP_SERVICE}/api/order/assign/rider`,
             {
                 orderId,
                 riderId: rider._id,
@@ -188,7 +188,7 @@ export const acceptOrder = asyncHandler(async (req, res) => {
         );
         if(data.success){
             const riderDetails = await Rider.findOneAndUpdate(
-                {user:riderUserId},
+                {user:riderUserId._id || riderUserId},
                 {
                     isAvailable:false,
                 },
@@ -204,7 +204,7 @@ export const acceptOrder = asyncHandler(async (req, res) => {
     } catch (error) {
         res.json({
             success:false,
-            message:error.message,
+            message:error.response?.data?.message || error.message,
         });
     }
 });
@@ -216,7 +216,7 @@ export const fetchCurrentOrder = asyncHandler(async (req, res) => {
         });
     }
     const rider = await Rider.findOne({
-        user: riderUserId
+        user: riderUserId._id || riderUserId
     });
     if (!rider) {
         return res.status(404).json({
@@ -236,7 +236,7 @@ export const fetchCurrentOrder = asyncHandler(async (req, res) => {
     } catch (error) {
         res.json({
             success:false,
-            message:error.message,
+            message:error.response?.data?.message || error.message,
         });
     }
 });
@@ -250,7 +250,7 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
         });
     }
     const rider = await Rider.findOne({
-        user: riderUserId
+        user: riderUserId._id || riderUserId
     });
     if (!rider) {
         return res.status(404).json({
@@ -272,7 +272,35 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
     } catch (error) {
         res.json({
             success:false,
-            message:error.message,
+            message:error.response?.data?.message || error.message,
         });
+    }
+});
+
+export const fetchPendingOrders = asyncHandler(async (req, res) => {
+    const riderUserId = req.user;
+    if (!riderUserId) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+    const rider = await Rider.findOne({ user: riderUserId._id || riderUserId });
+    if (!rider) {
+        return res.status(404).json({ message: "Rider not found" });
+    }
+    if (!rider.isAvailable) {
+        // Rider not available - return empty list (not an error)
+        return res.json({ success: true, count: 0, orders: [] });
+    }
+    try {
+        const [longitude, latitude] = rider.location?.coordinates || [];
+        const url = latitude && longitude
+            ? `${process.env.SHOP_SERVICE}/api/order/pending/rider?latitude=${latitude}&longitude=${longitude}&maxDistance=100000`
+            : `${process.env.SHOP_SERVICE}/api/order/pending/rider`;
+
+        const { data } = await axios.get(url, {
+            headers: { "x-internal-key": process.env.INTERNAL_SERVICE_KEY },
+        });
+        return res.json(data);
+    } catch (error) {
+        return res.json({ success: false, message: error.message, orders: [] });
     }
 });

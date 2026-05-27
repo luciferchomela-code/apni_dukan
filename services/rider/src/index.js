@@ -8,7 +8,8 @@ import { startOrderReadyConsumer } from "./config/orderReady.consumer.js";
 
 dotenv.config();
 
-// Initialize RabbitMQ and start consumers
+// CRITICAL: Connect DB BEFORE starting consumer (consumer uses Mongoose models)
+await connectDB();
 await connectRabbitMQ();
 await startOrderReadyConsumer();
 
@@ -17,11 +18,8 @@ app.use(express.json());
 app.use(cors());
 const PORT = process.env.PORT || 5005;
 
-
-app.use("/api",router)
-
+app.use("/api", router);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
-    connectDB();
 });

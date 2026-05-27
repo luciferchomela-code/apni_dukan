@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Navigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -6,12 +6,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAppData } from "../context/AppContext";
 import { useSocket } from "../context/SocketContext";
 import { riderService } from "../main";
+import riderStateSound from "../../assets/son_duquotidient-message-envoye-iphone-apple-391098.mp3";
 import RiderChat from "../components/RiderChat.jsx";
 import {
     BiUpload, BiX, BiPhone, BiIdCard, BiCar,
     BiCurrentLocation, BiPowerOff, BiCheckCircle,
     BiTime, BiMapPin, BiPackage, BiRun, BiCheck,
-    BiStore, BiUser, BiNavigation, BiRefresh
+    BiStore, BiUser, BiNavigation, BiRefresh,
+    BiVolumeFull, BiVolumeMute
 } from "react-icons/bi";
 
 /* ─────────────── Status Config ─────────────── */
@@ -281,6 +283,29 @@ const RiderDashboard = () => {
     const [deliveredOrders, setDeliveredOrders] = useState([]);
     const [updatingOrder, setUpdatingOrder] = useState(false);
     const [activeTab, setActiveTab] = useState("active");
+    const [riderAudio] = useState(() => new Audio(riderStateSound));
+    const [soundEnabled, setSoundEnabled] = useState(true);
+    const soundEnabledRef = useRef(soundEnabled);
+
+    useEffect(() => {
+        soundEnabledRef.current = soundEnabled;
+    }, [soundEnabled]);
+
+    const toggleSound = () => {
+        if (!soundEnabled) {
+            riderAudio.volume = 0;
+            riderAudio.play().then(() => {
+                riderAudio.pause();
+                riderAudio.volume = 1;
+                riderAudio.currentTime = 0;
+            }).catch(e => console.log(e));
+            setSoundEnabled(true);
+            toast.success("Sound notifications enabled!");
+        } else {
+            setSoundEnabled(false);
+            toast("Sound notifications disabled.", { icon: "🔇", style: { background: "#121212", color: "#F8F8F8" } });
+        }
+    };
 
     async function fetchProfile() {
         try {
@@ -314,8 +339,21 @@ const RiderDashboard = () => {
         } catch { setCurrentOrder(null); }
     }
 
+    async function fetchPendingOrders() {
+        try {
+            const { data } = await axios.get(riderService + "/api/order/pending", {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+            });
+            if (data?.orders) {
+                setPendingOrders(data.orders);
+            }
+        } catch (err) {
+            console.error("Failed to fetch pending orders:", err);
+        }
+    }
+
     useEffect(() => {
-        if (user?.role === "rider") { fetchProfile(); fetchCurrentOrder(); }
+        if (user?.role === "rider") { fetchProfile(); fetchCurrentOrder(); fetchPendingOrders(); }
         else setLoading(false);
     }, [user]);
 
@@ -328,6 +366,11 @@ const RiderDashboard = () => {
                 return [order, ...prev];
             });
             toast("🚀 New delivery request!", { style: { background: "#121212", color: "#D4AF37", border: "1px solid #1F1F1F" } });
+            
+            if (soundEnabledRef.current) {
+                riderAudio.currentTime = 0;
+                riderAudio.play().catch(e => console.warn("Rider audio error:", e));
+            }
         };
 
         const handleOrderUpdate = (data) => {
@@ -348,7 +391,23 @@ const RiderDashboard = () => {
         };
     }, [socket, socketReady]);
 
+    useEffect(() => {
+        if (!profile?.isAvailable) return;
+        const interval = setInterval(() => {
+            fetchPendingOrders();
+        }, 15000); // every 15 seconds
+        return () => clearInterval(interval);
+    }, [profile?.isAvailable]);
+
     const toggleAvailability = async () => {
+        // Unlock audio on interaction
+        riderAudio.volume = 0;
+        riderAudio.play().then(() => {
+            riderAudio.pause();
+            riderAudio.volume = 1;
+            riderAudio.currentTime = 0;
+        }).catch(e => console.log("Audio unlock failed, will try next interaction"));
+        
         if (!navigator.geolocation) { toast.error("Please enable location"); return; }
         setToggling(true);
         navigator.geolocation.getCurrentPosition(
@@ -361,6 +420,7 @@ const RiderDashboard = () => {
                     }, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
                     toast.success(profile.isAvailable ? "You are now offline" : "You are now available!");
                     await fetchProfile();
+                    await fetchPendingOrders();
                 } catch { toast.error("Something went wrong"); }
                 finally { setToggling(false); }
             },
@@ -422,12 +482,20 @@ const RiderDashboard = () => {
             <div className="mx-auto max-w-2xl space-y-6">
 
                 {/* Status Header */}
-                <div className="text-center space-y-2 pt-4">
-                    <div className="inline-flex items-center gap-2 bg-[#121212] border border-[#1F1F1F] rounded-full px-4 py-2">
-                        <span className={`w-2 h-2 rounded-full ${isOnline ? "bg-emerald-400 animate-pulse" : "bg-[#666]"}`} />
-                        <span className={`text-[10px] font-black uppercase tracking-[0.3em] ${isOnline ? "text-emerald-400" : "text-[#666]"}`}>
-                            {isOnline ? "Online" : "Offline"}
-                        </span>
+                <div className="relative text-center space-y-2 pt-4">
+                    <div className="flex items-center justify-between">
+                        <div className="inline-flex items-center gap-2 bg-[#121212] border border-[#1F1F1F] rounded-full px-4 py-2">
+                            <span className={`w-2 h-2 rounded-full ${isOnline ? "bg-emerald-400 animate-pulse" : "bg-[#666]"}`} />
+                            <span className={`text-[10px] font-black uppercase tracking-[0.3em] ${isOnline ? "text-emerald-400" : "text-[#666]"}`}>
+                                {isOnline ? "Online" : "Offline"}
+                            </span>
+                        </div>
+                        <button 
+                            onClick={toggleSound}
+                            className={`p-2.5 rounded-full border transition-all duration-300 ${soundEnabled ? "bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37]" : "bg-[#121212] border-[#1F1F1F] text-[#666] hover:bg-[#1A1A1A] hover:text-[#999]"}`}
+                        >
+                            {soundEnabled ? <BiVolumeFull size={18} /> : <BiVolumeMute size={18} />}
+                        </button>
                     </div>
                     <h1 className="text-2xl font-black text-[#F8F8F8] tracking-tight">Rider Dashboard</h1>
                 </div>
@@ -528,6 +596,11 @@ const RiderDashboard = () => {
 
                         {activeTab === "pending" && (
                             <motion.div key="pending" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="space-y-4">
+                                <div className="flex justify-end">
+                                    <button onClick={fetchPendingOrders} className="text-xs font-bold text-[#D4AF37] border border-[#D4AF37]/30 rounded-lg px-3 py-1.5 hover:bg-[#D4AF37]/10 flex items-center gap-1 transition-all">
+                                        <BiRefresh className="h-4 w-4" /> Refresh
+                                    </button>
+                                </div>
                                 {allPending.length === 0 ? (
                                     <EmptyState icon={BiPackage} title="No pending requests" subtitle="New delivery requests will appear here" />
                                 ) : (
