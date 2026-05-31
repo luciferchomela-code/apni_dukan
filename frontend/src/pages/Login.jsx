@@ -44,7 +44,11 @@ const Login = () => {
 
       setIsAuth(true);
 
-      navigate("/");
+      if (!result.data.user.role) {
+        navigate("/select-role");
+      } else {
+        navigate("/");
+      }
 
     } catch (error) {
 

@@ -57,7 +57,9 @@ const Home = () => {
 
     useEffect(() => {
 
-        if (!appLoading && user?.role === "seller") {
+        if (!appLoading && user && !user.role) {
+            navigate("/select-role");
+        } else if (!appLoading && user?.role === "seller") {
             navigate("/shop");
         }
 
