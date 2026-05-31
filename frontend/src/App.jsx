@@ -29,6 +29,7 @@ const App = () => {
 
                 {/* Protected: must be logged in to access */}
                 <Route element={<ProtectedRoute />}>
+                    <Route path="/" element={<Home />} />
                     <Route path="/select-role" element={<SelectRole />} />
                     <Route path="/account" element={<Account />} />
                     <Route path="/shop" element={<Shop />} />
@@ -42,7 +43,6 @@ const App = () => {
                 </Route>
 
                 {/* Open: accessible to everyone */}
-                <Route path="/" element={<Home />} />
                 <Route path="/shop/:id" element={<ShopPage />} />
             </Routes> 
             <Toaster />
