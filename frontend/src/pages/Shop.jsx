@@ -102,7 +102,7 @@ const Shop = () => {
                 onUpdate={fetchMyShop}
             />
 
-            <div className="min-w-5xl mx-auto space-y-12">
+            <div className="w-full max-w-5xl mx-auto space-y-12">
 
                 <div className="bg-[#121212] border border-[#1F1F1F] rounded-[0.5rem] overflow-hidden shadow-2xl relative">
 
@@ -121,7 +121,7 @@ const Shop = () => {
                             <button
                                 key={t.key}
                                 onClick={() => setTab(t.key)}
-                                className={`flex-1 py-6 text-[10px] font-black uppercase tracking-[0.5em] transition-all relative ${
+                                className={`flex-1 py-4 sm:py-6 text-[10px] font-black uppercase tracking-widest sm:tracking-[0.5em] transition-all relative ${
                                     tab === t.key
                                         ? "bg-[#121212] text-[#D4AF37]"
                                         : "text-[#666] hover:text-[#A0A0A0]"
@@ -140,7 +140,7 @@ const Shop = () => {
 
                     </div>
 
-                    <div className="p-16">
+                    <div className="p-4 sm:p-8 md:p-16">
 
                         <AnimatePresence mode="wait">
 

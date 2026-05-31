@@ -135,12 +135,12 @@ const ShopProfile = ({ shop, isSeller, onUpdate }) => {
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className='mx-auto max-w-lg rounded-[0.5rem] bg-[#121212] border border-[#1F1F1F] overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.8)] mb-20 relative'
+            className='mx-auto max-w-lg rounded-[0.5rem] bg-[#121212] border border-[#1F1F1F] overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.8)] mb-10 sm:mb-20 relative'
         >
 
             <div className='absolute top-0 right-10 w-8 h-20 bg-gradient-to-b from-[#D4AF37] to-transparent opacity-40 z-30'></div>
 
-            <div className="relative h-80 w-full bg-[#0A0A0A] group overflow-hidden border-b border-[#1F1F1F]">
+            <div className="relative h-48 sm:h-80 w-full bg-[#0A0A0A] group overflow-hidden border-b border-[#1F1F1F]">
 
                 <img
                     src={previewUrl || shop.image || "https://via.placeholder.com/800x400?text=Curated+Exhibit"}
@@ -192,13 +192,13 @@ const ShopProfile = ({ shop, isSeller, onUpdate }) => {
 
                         <BiCrown className='h-4 w-4 text-[#D4AF37]' />
 
-                        <span className="text-[#D4AF37] text-[10px] font-black uppercase tracking-[0.4em] pt-0.5">
+                        <span className="text-[#D4AF37] text-[10px] font-black uppercase tracking-widest sm:tracking-[0.4em] pt-0.5">
                             Shop Identity
                         </span>
 
                     </div>
 
-                    <h1 className='text-4xl font-serif text-[#F8F8F8] italic tracking-[0.2em] uppercase'>
+                    <h1 className='text-2xl sm:text-4xl font-serif text-[#F8F8F8] italic tracking-widest sm:tracking-[0.2em] uppercase'>
                         {shop.name}
                     </h1>
 
@@ -206,7 +206,7 @@ const ShopProfile = ({ shop, isSeller, onUpdate }) => {
 
             </div>
 
-            <div className='p-12 space-y-12'>
+            <div className='p-6 sm:p-12 space-y-8 sm:space-y-12'>
 
                 <div className='flex items-start justify-between'>
 
@@ -322,11 +322,11 @@ const ShopProfile = ({ shop, isSeller, onUpdate }) => {
                             <button
                                 onClick={toggleOpenStatus}
                                 disabled={loading}
-                                className={`w-full h-20 text-[10px] font-black py-4 rounded-[0.25rem] transition-all flex items-center justify-center gap-6 border ${
+                                className={`w-full h-16 sm:h-20 text-[10px] font-black py-4 rounded-[0.25rem] transition-all flex items-center justify-center gap-3 sm:gap-6 border ${
                                     isOpen
                                         ? "bg-transparent text-[#666] border-[#1F1F1F] hover:text-[#A0A0A0]"
                                         : "bg-transparent text-[#D4AF37] border-[#D4AF37]/20 hover:border-[#D4AF37]"
-                                } uppercase tracking-[0.5em]`}
+                                } uppercase tracking-widest sm:tracking-[0.5em]`}
                             >
 
                                 <span className={`h-1.5 w-1.5 rounded-full ${
