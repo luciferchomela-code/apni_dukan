@@ -1,4 +1,10 @@
 {
+  "name": "apni-dukan",
+  "private": true,
+  "scripts": {
+    "install:frontend": "cd frontend && npm install",
+    "build": "cd frontend && npm install && npm run build"
+  },
   "dependencies": {
     "@types/amqplib": "^0.10.8",
     "amqplib": "^2.0.1",

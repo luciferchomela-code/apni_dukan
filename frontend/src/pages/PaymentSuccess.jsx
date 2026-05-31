@@ -4,8 +4,7 @@ import { motion } from "framer-motion";
 import { BiCheckShield, BiShoppingBag, BiReceipt, BiLoader } from "react-icons/bi";
 import axios from "axios";
 import toast from "react-hot-toast";
-
-const utilsService = "http://localhost:5002";
+import { utilsService } from "../main";
 
 const PaymentSuccess = () => {
     // paymentId comes from the Razorpay flow

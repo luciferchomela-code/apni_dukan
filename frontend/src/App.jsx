@@ -22,29 +22,28 @@ const App = () => {
         <BrowserRouter>
             <Navbar />
             <Routes>
-                {/* Public only routes
-                <Route element={<PublicRoute />}> */}
+                {/* Public-only: logged-in users get redirected to "/" */}
+                <Route element={<PublicRoute />}>
                     <Route path="/login" element={<Login />} />
-                {/* </Route> */}
-                {/* Protected routes
-                <Route element={<ProtectedRoute />}> */}
+                </Route>
+
+                {/* Protected: must be logged in to access */}
+                <Route element={<ProtectedRoute />}>
                     <Route path="/select-role" element={<SelectRole />} />
                     <Route path="/account" element={<Account />} />
                     <Route path="/shop" element={<Shop />} />
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/checkout" element={<Checkout />} />
                     <Route path="/payment-success/:paymentId" element={<PaymentSuccess />} />
+                    <Route path="/address" element={<Address />} />
                     <Route path="/orders" element={<MyOrders />} />
                     <Route path="/orders/:id" element={<OrdersPage />} />
-                {/* </Route> */}
+                    <Route path="/rider-dashboard" element={<RiderDashboard />} />
+                </Route>
 
-                {/* Public routes */}
-                {/* <Route element={<PublicRoute />}> */}
-                    <Route path="/" element={<Home />} />
-                    <Route path="/address" element={<Address />} />
-                {/* </Route> */}
+                {/* Open: accessible to everyone */}
+                <Route path="/" element={<Home />} />
                 <Route path="/shop/:id" element={<ShopPage />} />
-                <Route path="/rider-dashboard" element={<RiderDashboard />} />
             </Routes> 
             <Toaster />
         </BrowserRouter>

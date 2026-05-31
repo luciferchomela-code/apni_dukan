@@ -3,7 +3,7 @@ import { useAppData } from "../context/AppContext";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { shopService } from "../main";
+import { shopService, utilsService } from "../main";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     BiMapPin,
@@ -16,8 +16,6 @@ import {
     BiShield,
     BiPackage,
 } from "react-icons/bi";
-
-const utilsService = "http://localhost:5002";
 
 const Checkout = () => {
     const { cart, subTotal, quantity, fetchCart, location, shopLocation } = useAppData();
