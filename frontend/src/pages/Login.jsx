@@ -56,11 +56,9 @@ const Login = () => {
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#080810]">
 
-      {/* ── Animated gradient background ── */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-br from-[#0f0c29] via-[#080810] to-[#0a0a1a]" />
 
-        {/* Floating orbs */}
         <motion.div
           animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
@@ -77,7 +75,6 @@ const Login = () => {
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-purple-700/15 blur-[100px]"
         />
 
-        {/* Subtle grid overlay */}
         <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
@@ -88,32 +85,26 @@ const Login = () => {
         />
       </div>
 
-      {/* ── Main card ── */}
       <motion.div
         initial={{ opacity: 0, y: 32, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-10 w-full max-w-md mx-4"
       >
-        {/* Glass card */}
         <div className="relative rounded-3xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-2xl shadow-2xl shadow-black/60 overflow-hidden p-8">
 
-          {/* Top shimmer line */}
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-400/60 to-transparent" />
 
-          {/* ── Logo / Brand ── */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.4 }}
             className="flex flex-col items-center mb-8"
           >
-            {/* Icon badge */}
             <div className="relative mb-5">
               <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/40">
                 <BiStore className="w-10 h-10 text-white" />
               </div>
-              {/* Glow ring */}
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 blur-xl opacity-40 -z-10 scale-110" />
             </div>
 
@@ -128,10 +119,8 @@ const Login = () => {
             </p>
           </motion.div>
 
-          {/* ── Divider ── */}
           <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-7" />
 
-          {/* ── Heading ── */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -144,7 +133,6 @@ const Login = () => {
             </p>
           </motion.div>
 
-          {/* ── Google Button ── */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -156,7 +144,6 @@ const Login = () => {
               disabled={loading}
               className="group relative w-full flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] hover:bg-white/[0.1] hover:border-white/20 px-5 py-4 font-semibold text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] shadow-lg shadow-black/20"
             >
-              {/* Button shimmer on hover */}
               <span className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-violet-500/10 via-transparent to-indigo-500/10" />
 
               {loading ? (
@@ -173,7 +160,6 @@ const Login = () => {
             </button>
           </motion.div>
 
-          {/* ── Feature pills ── */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -196,7 +182,6 @@ const Login = () => {
             ))}
           </motion.div>
 
-          {/* ── ToS ── */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -213,11 +198,9 @@ const Login = () => {
             </a>
           </motion.p>
 
-          {/* Bottom shimmer line */}
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-400/40 to-transparent" />
         </div>
 
-        {/* Outer glow */}
         <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-violet-600/10 to-indigo-600/10 blur-2xl -z-10 scale-105" />
       </motion.div>
     </div>
