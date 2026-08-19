@@ -19,7 +19,9 @@ app.use(cors());
 const PORT = process.env.PORT || 5005;
 
 app.use("/api", router);
-
+app.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok", service: "rider" });
+});
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
