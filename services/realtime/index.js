@@ -16,7 +16,9 @@ const server = http.createServer(app);
 initSocket(server);
 app.use("/api/v1/internal",internalRoute);
 const PORT = process.env.PORT || 5002;
-
+app.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok", service: "rider" });
+});
 server.listen(PORT, () => {
     console.log(`Realtime service running on port ${PORT}`);
 });
