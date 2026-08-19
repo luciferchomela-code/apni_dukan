@@ -37,6 +37,10 @@ app.use("/api/address", addressRouter);
 
 app.use("/api/order", orderRouter);
 
+app.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok", service: "rider" });
+});
+
 connectDB();
 
 await connectRabbitMQ();
