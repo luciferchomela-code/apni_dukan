@@ -14,7 +14,7 @@ app.use(express.json())
 
 app.use("/api/auth", authRoute)
 app.get("/health", (req, res) => {
-    res.status(200).json({ status: "ok", service: "rider" });
+    res.status(200).json({ status: "ok", service: "auth" });
 });
 const PORT = process.env.PORT || 5000
 
