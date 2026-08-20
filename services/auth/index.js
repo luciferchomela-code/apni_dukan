@@ -13,8 +13,17 @@ app.use(cors())
 app.use(express.json())
 
 app.use("/api/auth", authRoute)
-app.get("/health", (req, res) => {
-    res.status(200).json({ status: "ok", service: "auth" });
+app.get("/keep-alive", async (req,res) => {
+    const urls = [
+        "https://apni-dukan-shop.onrender.com/health",
+        "https://apni-dukan-rider.onrender.com/health",
+        "https://apni-dukan-realtime.onrender.com/health",
+        "https://apni-dukan-utils.onrender.com/health"
+    ];
+    await Promise.all(
+        urls.map(url => fetch(url))
+    );
+    res.json({status:"ok"});
 });
 const PORT = process.env.PORT || 5000
 
